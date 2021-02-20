@@ -1,13 +1,9 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-class App extends React.PureComponent {
-    render() {
-        return <h1>Hello world!</h1>;
-    }
-}
+import App from "./App"
 
 ReactDOM.render(
-    <App />,
+    <App message='hello count:'/>,
     document.getElementById("app")
 );

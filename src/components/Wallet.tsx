@@ -181,10 +181,10 @@ export const Wallet = () => {
       {active ? (
         <div>
           <button type="button" onClick={approveSwapSwap}>
-            🔄 get approve to swap swap
+            📡 get approve to swap swap
           </button>
           <button type="button" onClick={startToSwapSwap}>
-            🔄 start to swap swap
+            🛰 start to swap swap
           </button>
           <h1>chain ID:{chainId}</h1>
           <h1>account :{account}</h1>

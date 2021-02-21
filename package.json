@@ -8,11 +8,19 @@
     "build": "parcel build src/index.html"
   },
   "dependencies": {
+    "@binance-chain/bsc-connector": "^1.0.0",
+    "@ethersproject/address": "^5.0.0-beta",
+    "@ethersproject/contracts": "^5.0.0-beta",
+    "@ethersproject/networks": "^5.0.0-beta",
+    "@ethersproject/providers": "^5.0.0-beta",
+    "@ethersproject/solidity": "^5.0.0-beta",
     "@types/react": "^16",
     "@types/react-dom": "^16",
-    "react": "^16.9.0",
+    "@uniswap/sdk": "^3.0.3",
+    "react": "^16.12.0",
     "react-datepicker": "^3.5.0",
-    "react-dom": "^16.9.0"
+    "react-dom": "^16.9.0",
+    "use-wallet": "^0.8.1"
   },
   "devDependencies": {
     "parcel-bundler": "^1",

@@ -1,19 +1,17 @@
 import React from 'react'
+import { Web3ReactProvider, useWeb3React } from '@web3-react/core'
+import { Web3Provider } from '@ethersproject/providers'
+import { Wallet } from './components/Wallet'
+function getLibrary(provider: any): Web3Provider {
+  const library = new Web3Provider(provider)
+  library.pollingInterval = 12000
+  return library
+}
 
-class App extends React.Component<{ message: string }, { count: number }> {
-    state = { count: 100     };
-    render() {
-      return (
-        <div onClick={() => this.increment(1)}>
-          {this.props.message} {this.state.count}
-        </div>
-      );
-    }
-    increment = (amt: number) => {
-      // like this
-      this.setState((state) => ({
-        count: state.count + amt,
-      }));
-    };
-  }
-  export default App
+export const App = () => {
+  return (
+    <Web3ReactProvider getLibrary={getLibrary}>
+      <Wallet/>
+    </Web3ReactProvider>
+  )
+}

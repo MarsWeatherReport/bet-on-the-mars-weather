@@ -1,11 +1,11 @@
 {
-  "name": "my-cool-spa",
-  "version": "1.0.0",
+  "name": "bet-on-the-mars-weather",
+  "version": "1.0.1",
   "main": "index.html",
   "license": "MIT",
   "scripts": {
     "start": "parcel src/index.html",
-    "build": "parcel build src/index.html",
+    "build": "parcel build src/index.html --out-dir public",
     "ipfs:deploy": "node scripts/ipfs.js"
   },
   "dependencies": {

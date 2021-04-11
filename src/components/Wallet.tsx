@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, Dispatch } from "react";
 import { Web3Provider } from "@ethersproject/providers";
 import { Web3ReactProvider, useWeb3React } from "@web3-react/core";
 import { BigNumber } from "@ethersproject/bignumber";
 import { InjectedConnector } from "@web3-react/injected-connector";
-import { BscConnector } from "@binance-chain/bsc-connector";
 import {
   Currency,
   currencyEquals,
@@ -19,7 +18,6 @@ import { abi } from "./FIXabi";
 let nonce = 0;
 const value = 300000;
 const deadline = 2613887589;
-const bscConnector = new BscConnector(); // ok for invoke bsc wallet
 const injectedConnector = new InjectedConnector({
   supportedChainIds: [
     1, // Mainet
@@ -35,164 +33,146 @@ const injectedConnector = new InjectedConnector({
   ],
 });
 
+  interface IData {
+    balance: string;
+    current: string;
+    previous: string;
+  }
 export const Wallet = () => {
-  const [signatureData, setSignatureData] = useState<{
-    v: number;
-    r: string;
-    s: string;
-    deadline: number;
-  } | null>(null);
+
+  const [data, setData] = useState<IData>({balance: '0', current: '0', previous: '0'});
 
   const currentProvider = useWeb3React<Web3Provider>();
   const { library, account, activate, active, chainId } = currentProvider;
+  if (42 === chainId) {
+    const networkId = 'Kavon'
+  } else {
+    const networkId = 'currently only support Kavon (testnet)' 
+  }
   console.log(currentProvider);
   if (currentProvider.library !== undefined) {
     console.log(currentProvider.library);
   }
+
+  // BetOnThePressureOnMars.sol (on Kovan testnet)
   const tokenContract_ro = new Contract(
-    "0xFD8E2766c68BB8Da5a5AD5718724383fd9358bE6",
+    "0x756387869AfDEeb868E82084CAa27847b0970B4B",
     abi,
     library
   );
 
-  const onClick = () => {
-    //activate(bscConnector); // TODO
+  var myVar: any = setInterval(( async () => { await dataInSync(); } ), 1000);
+  const onClick = async () => {
     activate(injectedConnector); // use metaMask
   };
 
-  const startToSwapSwap = () => {
-    if (signatureData !== null) {
-      console.log("start to swap swap");
-      const signer = library.getSigner(account);
-      console.log(signer);
-      console.log(account);
-      const tokenContract = new Contract(
-        "0xFD8E2766c68BB8Da5a5AD5718724383fd9358bE6",
-        abi,
-        signer
-      );
-      const args = [
-        account,
-        "0x9E4C996EFD1Adf643467d1a1EA51333C72a25453",
-        value,
-        deadline,
-        signatureData.v,
-        signatureData.r,
-        signatureData.s,
-      ];
-
-      const gas = tokenContract.estimateGas.permit(...args);
-
-      console.log(gas);
-      console.log(signatureData);
-      tokenContract.permit(
-        account,
-        "0x9E4C996EFD1Adf643467d1a1EA51333C72a25453",
-        value,
-        deadline,
-        signatureData.v,
-        signatureData.r,
-        signatureData.s
-      );
-    }
+  const betLowerPressure = () => {
+    console.log('🐝 requestMarsReport')
+    const signer = library.getSigner(account);
+    console.log(signer);
+    console.log(account);
+    const tokenContract = new Contract(
+      "0x756387869AfDEeb868E82084CAa27847b0970B4B",
+      abi,
+      signer
+    );
+      tokenContract.requestMarsReport();
   };
 
-  function approveSwapSwap() {
-    console.log("swap ... swap ... 🤖💩 🥊 🇹🇼 Flag: Taiwan");
-    const EIP712Domain = [
-      { name: "name", type: "string" },
-      { name: "version", type: "string" },
-      { name: "chainId", type: "uint256" },
-      { name: "verifyingContract", type: "address" },
-    ];
-    // OK
-    const domain = {
-      name: "Permittable-Fixed",
-      version: "1",
-      chainId: chainId,
-      verifyingContract: "0xFD8E2766c68BB8Da5a5AD5718724383fd9358bE6", // me or realyer //pair.liquidityToken.address
-    };
-    // OK
-    const Permit = [
-      { name: "owner", type: "address" },
-      { name: "spender", type: "address" },
-      { name: "value", type: "uint256" },
-      { name: "nonce", type: "uint256" },
-      { name: "deadline", type: "uint256" },
-    ];
-    // OK
-    tokenContract_ro
-      .nonces(account) //BigNumber.from("100000000000000000000"))
-      .then((x: { toNumber: () => number }) => {
-        nonce = x.toNumber();
-        console.log("nonce: ", nonce);
-
-        const message = {
-          owner: account,
-          spender: "0x9E4C996EFD1Adf643467d1a1EA51333C72a25453",
-          value: value.toString(),
-          nonce: nonce,
-          deadline: deadline.toString(), //Wed Oct 30 2052 15:53:09 GMT+0800 (台北標準時間)
-        };
-        console.log(message);
-        // OK
-        const data = JSON.stringify({
-          types: {
-            EIP712Domain,
-            Permit,
-          },
-          domain,
-          primaryType: "Permit",
-          message,
-        });
-        // OK
-        console.log("sign data: ", account);
-        console.log(data);
-
-        library
-          .send("eth_signTypedData_v4", [account, data])
-
-          .then(splitSignature)
-          .then((signature) => {
-            setSignatureData({
-              v: signature.v,
-              r: signature.r,
-              s: signature.s,
-              deadline: deadline,
-            });
-            console.log(signature);
-            console.log(deadline);
-            console.log("v:", signature.v); // v: signature.v,
-            console.log("r:", signature.r); //   r: signature.r,
-            console.log("s:", signature.s); //   s: signature.s,
-            console.log("deadline:", deadline);
-          })
-          .catch((error: { code: number }) => {
-            // for all errors other than 4001 (EIP-1193 user rejected request), fall back to manual approve
-            if (error?.code !== 4001) {
-              console.log("4001 catch error");
-            }
-          });
-      });
+  function myStopFunction() {
+    clearInterval(myVar);
   }
+
+  async function dataInSync() {
+    console.log('☠️ xxx sync data to GUI')
+    let currentPressure = await tokenContract_ro.showCurrentPressureOnMars();
+    let oldPressure = await tokenContract_ro.old_pressure();
+    const args = [ account ];
+    let balance = await tokenContract_ro.showBalanceOf(...args);
+    setData({balance: balance.toString(), current : (currentPressure.toNumber()/10000).toString(), previous: (oldPressure.toNumber()/10000).toString()})
+    myStopFunction()
+  }
+
+  const getFreeBonus = () => {
+    const signer = library.getSigner(account);
+    const tokenContract = new Contract(
+      "0x756387869AfDEeb868E82084CAa27847b0970B4B",
+      abi,
+      signer
+    );
+    console.log('🐝 free free free')
+      tokenContract.getFreeBonus();
+  };
+
+  const settlement = () => {
+    const signer = library.getSigner(account);
+    const tokenContract = new Contract(
+      "0x756387869AfDEeb868E82084CAa27847b0970B4B",
+      abi,
+      signer
+    );
+    console.log('🐝 win win win')
+      tokenContract.settlement();
+  };
+
+  const higherP = () => {
+    const signer = library.getSigner(account);
+    const tokenContract = new Contract(
+      "0x756387869AfDEeb868E82084CAa27847b0970B4B",
+      abi,
+      signer
+    );
+    console.log('🐝 higher higher higher')
+      tokenContract.betOnLargerPressureNextSol(10);
+  };
+  const lowerP = () => {
+    const signer = library.getSigner(account);
+    const tokenContract = new Contract(
+      "0x756387869AfDEeb868E82084CAa27847b0970B4B",
+      abi,
+      signer
+    );
+    console.log('🐝 lower lower lower')
+      tokenContract.betOnSmallerPressureNextSol(10);
+  };
 
   return (
     <div>
       {active ? (
         <div>
-          <button type="button" onClick={approveSwapSwap}>
-            📡 get approve to swap swap
+          <h1>Bet on The Weather on Mars</h1>
+          <button type="button" onClick={betLowerPressure}>
+            🛰 requestMarsReport -> from ChainLink 
+          </button> only Owner (0x60968...)
+          <button type="button" onClick={settlement}>
+          🦄 settle 🦄 
+          </button> 
+<p>------- 🚀🔭🛰📡🌈 Muzamint Lab., Taiwan (Ming-der Wang) 👍🖐️👋🤝💪🙏🙌🔐 ---------</p>
+          <button type="button" onClick={dataInSync}>
+           🔄
           </button>
-          <button type="button" onClick={startToSwapSwap}>
-            🛰 start to swap swap
+          <button type="button" onClick={getFreeBonus}>
+          👉🏽 👉🏽 👉🏽 👉🏽 👉🏽 👉🏽  📡 get free bonus (100 points) just once.
           </button>
-          <h1>chain ID:{chainId}</h1>
-          <h1>account :{account}</h1>
-          <h1>connection :{library.connection.url}</h1>
+          <p/>
+          <button type="button" onClick={higherP}>
+          Bet 10 points on higher pressure on Mars on next Sol 👈
+          </button> 
+          <p/>
+          <button type="button" onClick={lowerP}>
+          👉🏽 Bet 10 points on lower pressure on Mars on next Sol.
+          </button> 
+
+          <h2> On network ⚡ :{networkId}</h2>
+          <h2>Current Sol, Pressure on Mars: {data.current} (Pa)</h2>
+          <h2>Previous Sol, Pressure on Mars: {data.previous} (Pa)</h2>
+          <h2> 🙋‍♀️: {account}</h2>
+          <h2> ‍💰: {data.balance}</h2>
+          <h2> 🦊: {library.connection.url}</h2>
         </div>
       ) : (
         <button type="button" onClick={onClick}>
-          Connect
+          🚀 Connect 🚀 X-Space 🚀 to Mars 
         </button>
       )}
     </div>

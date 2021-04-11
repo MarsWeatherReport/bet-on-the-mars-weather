@@ -1,6 +1,6 @@
 {
-  "name": "my-cool-spa",
-  "version": "1.0.0",
+  "name": "bet-on-the-mars-weather",
+  "version": "1.0.1",
   "main": "index.html",
   "license": "MIT",
   "scripts": {

@@ -34,102 +34,145 @@ const injectedConnector = new InjectedConnector({
 });
 
   interface IData {
+    balance: string;
     current: string;
     previous: string;
   }
 export const Wallet = () => {
 
-  const [data, setData] = useState<IData>({current: '0', previous: '0'});
-
-  const [signatureData, setSignatureData] = useState<{
-    v: number;
-    r: string;
-    s: string;
-    deadline: number;
-  } | null>(null);
+  const [data, setData] = useState<IData>({balance: '0', current: '0', previous: '0'});
 
   const currentProvider = useWeb3React<Web3Provider>();
   const { library, account, activate, active, chainId } = currentProvider;
+  if (42 === chainId) {
+    const networkId = 'Kavon'
+  } else {
+    const networkId = 'currently only support Kavon (testnet)' 
+  }
   console.log(currentProvider);
   if (currentProvider.library !== undefined) {
     console.log(currentProvider.library);
   }
+
+  // BetOnThePressureOnMars.sol (on Kovan testnet)
   const tokenContract_ro = new Contract(
     "0x756387869AfDEeb868E82084CAa27847b0970B4B",
     abi,
     library
   );
 
+  var myVar: any = setInterval(( async () => { await dataInSync(); } ), 1000);
   const onClick = async () => {
     activate(injectedConnector); // use metaMask
   };
 
   const betLowerPressure = () => {
-    console.log('🐝 I bet lower pressure in next Sol')
-    if (signatureData !== null) {
-      const signer = library.getSigner(account);
-      console.log(signer);
-      console.log(account);
-      const tokenContract = new Contract(
-        "0xFD8E2766c68BB8Da5a5AD5718724383fd9358bE6",
-        abi,
-        signer
-      );
-      /*
-      const args = [
-        account,
-        "0x9E4C996EFD1Adf643467d1a1EA51333C72a25453",
-        value,
-        deadline,
-        signatureData.v,
-        signatureData.r,
-        signatureData.s,
-      ];
-
-      const gas = tokenContract.estimateGas.permit(...args);
-      tokenContract.permit(
-        account,
-        "0x9E4C996EFD1Adf643467d1a1EA51333C72a25453",
-        value,
-        deadline,
-        signatureData.v,
-        signatureData.r,
-        signatureData.s
-      );
-      */
-
-      console.log(signatureData);
-    }
+    console.log('🐝 requestMarsReport')
+    const signer = library.getSigner(account);
+    console.log(signer);
+    console.log(account);
+    const tokenContract = new Contract(
+      "0x756387869AfDEeb868E82084CAa27847b0970B4B",
+      abi,
+      signer
+    );
+      tokenContract.requestMarsReport();
   };
 
-  async function betHigherPressure() {
-    console.log('☠️ I bet higher pressure in next Sol')
+  function myStopFunction() {
+    clearInterval(myVar);
+  }
+
+  async function dataInSync() {
+    console.log('☠️ xxx sync data to GUI')
     let currentPressure = await tokenContract_ro.showCurrentPressureOnMars();
     let oldPressure = await tokenContract_ro.old_pressure();
-    setData({current : (currentPressure.toNumber()/10000).toString(), previous: (oldPressure.toNumber()/10000).toString()})
+    const args = [ account ];
+    let balance = await tokenContract_ro.showBalanceOf(...args);
+    setData({balance: balance.toString(), current : (currentPressure.toNumber()/10000).toString(), previous: (oldPressure.toNumber()/10000).toString()})
+    myStopFunction()
   }
+
+  const getFreeBonus = () => {
+    const signer = library.getSigner(account);
+    const tokenContract = new Contract(
+      "0x756387869AfDEeb868E82084CAa27847b0970B4B",
+      abi,
+      signer
+    );
+    console.log('🐝 free free free')
+      tokenContract.getFreeBonus();
+  };
+
+  const settlement = () => {
+    const signer = library.getSigner(account);
+    const tokenContract = new Contract(
+      "0x756387869AfDEeb868E82084CAa27847b0970B4B",
+      abi,
+      signer
+    );
+    console.log('🐝 win win win')
+      tokenContract.settlement();
+  };
+
+  const higherP = () => {
+    const signer = library.getSigner(account);
+    const tokenContract = new Contract(
+      "0x756387869AfDEeb868E82084CAa27847b0970B4B",
+      abi,
+      signer
+    );
+    console.log('🐝 higher higher higher')
+      tokenContract.betOnLargerPressureNextSol(10);
+  };
+  const lowerP = () => {
+    const signer = library.getSigner(account);
+    const tokenContract = new Contract(
+      "0x756387869AfDEeb868E82084CAa27847b0970B4B",
+      abi,
+      signer
+    );
+    console.log('🐝 lower lower lower')
+      tokenContract.betOnSmallerPressureNextSol(10);
+  };
 
   return (
     <div>
       {active ? (
         <div>
           <h1>Bet on The Weather on Mars</h1>
-          <button type="button" onClick={betHigherPressure}>
-            📡 I bet the Pressure on Mars will be higher than current pressure.
-          </button>
-          <p>----</p>
           <button type="button" onClick={betLowerPressure}>
-            🛰 I bet the Pressure on Mars will be lower than current pressure.
+            🛰 requestMarsReport -> from ChainLink 
+          </button> only Owner (0x60968...)
+          <button type="button" onClick={settlement}>
+          🦄 settle 🦄 
+          </button> 
+<p>------- 🚀🔭🛰📡🌈 Muzamint Lab., Taiwan (Ming-der Wang) 👍🖐️👋🤝💪🙏🙌🔐 ---------</p>
+          <button type="button" onClick={dataInSync}>
+           🔄
           </button>
-          <h1> network ⚡ :{chainId}</h1>
-          <h1>Current Pressure: {data.current} (Pa)</h1>
-          <h1>Previous Pressure: {data.previous} (Pa)</h1>
-          <h1> 🙋‍♀️ :{account}</h1>
-          <h1> 🐶 :{library.connection.url}</h1>
+          <button type="button" onClick={getFreeBonus}>
+          👉🏽 👉🏽 👉🏽 👉🏽 👉🏽 👉🏽  📡 get free bonus (100 points) just once.
+          </button>
+          <p/>
+          <button type="button" onClick={higherP}>
+          Bet 10 points on higher pressure on Mars on next Sol 👈
+          </button> 
+          <p/>
+          <button type="button" onClick={lowerP}>
+          👉🏽 Bet 10 points on lower pressure on Mars on next Sol.
+          </button> 
+
+          <h2> On network ⚡ :{networkId}</h2>
+          <h2>Current Sol, Pressure on Mars: {data.current} (Pa)</h2>
+          <h2>Previous Sol, Pressure on Mars: {data.previous} (Pa)</h2>
+          <h2> 🙋‍♀️: {account}</h2>
+          <h2> ‍💰: {data.balance}</h2>
+          <h2> 🦊: {library.connection.url}</h2>
         </div>
       ) : (
         <button type="button" onClick={onClick}>
-          Connect
+          🚀 Connect 🚀 X-Space 🚀 to Mars 
         </button>
       )}
     </div>
